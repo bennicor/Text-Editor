@@ -21,17 +21,21 @@ class Cursor:
             self._row -= 1
             self._col = min(row_len, self.col_memory)
 
-    def down(self, row_len):
-        if self._row < self.rows - 1:
-            self._row += 1
-            self._col = min(row_len, self.col_memory)
+    def down(self, row_len, lines):
+        if self._row >= self.rows - 1 or self._row >= lines - 1:
+            return
+
+        self._row += 1
+        self._col = min(row_len, self.col_memory)
 
     def left(self):
         if self._col > 0:
             self._col -= 1
             self.col_memory = self._col
 
-    def right(self):
-        if self._col < self.cols - 1:
-            self._col += 1
-            self.col_memory = self._col
+    def right(self, row_len):
+        if self._col >= self.cols - 1 or self._col >= row_len:
+            return
+        
+        self._col += 1
+        self.col_memory = self._col
