@@ -16,10 +16,14 @@ class Cursor:
     def pos(self):
         return (self._row, self._col)
     
-    def up(self, row_len):
+    def up(self, row_len, from_blank_line=False):
         if self._row > 0:
             self._row -= 1
-            self._col = min(row_len, self.col_memory)
+
+            if from_blank_line:
+                self._col = self.col_memory = row_len
+            else:
+                self._col = min(row_len, self.col_memory)
 
     def down(self, row_len, lines):
         if self._row >= self.rows - 1 or self._row >= lines - 1:

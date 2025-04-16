@@ -18,3 +18,16 @@ class TextBuffer:
 
     def insert(self, row, col, char):
         self.text[row].insert(col, char)
+
+    def backspace(self, row, col):
+        if col < 0:
+            return
+        
+        if len(self.text[row]) == 0:
+            if self._lines == 1:
+                return
+            
+            self.text.pop(row)
+            self._lines -= 1
+        else:
+            self.text[row].pop(col)
