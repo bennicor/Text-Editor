@@ -1,5 +1,6 @@
 from text_buffer import TextBuffer
 from cursor import Cursor
+import curses
 
 
 class EditorWindow:
@@ -12,11 +13,13 @@ class EditorWindow:
         y, x = self.cursor.pos()
 
         while True:
-            k = self.window.getkey()
+            key = self.window.getch()
+            k = curses.keyname(key).decode()
+
             if k == "KEY_UP":
                 row_len = len(self.buffer.get_row(y - 1))
                 self.cursor.up(row_len)
-            elif k in ("KEY_DOWN", "\n"):
+            elif k in ("KEY_DOWN", "KEY_ENTER", "^J"):
                 self.buffer.new_line()
                 row_len = len(self.buffer.get_row(y + 1))
                 self.cursor.down(row_len)
@@ -27,7 +30,7 @@ class EditorWindow:
             else:
                 if len(k) > 1:
                     continue
-                
+
                 self.window.addch(y, x, k)
                 self.buffer.insert(y, k)
                 self.cursor.right()
