@@ -9,5 +9,5 @@ class TextBuffer:
     def new_line(self):
         self.text.append([])
 
-    def insert(self, line, char):
-        self.text[line].append(char)
+    def insert(self, row, col, char):
+        self.text[row].insert(col, char)
