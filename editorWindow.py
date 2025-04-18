@@ -18,9 +18,9 @@ class EditorWindow:
         with open("./test.txt", "r") as f:
             for i, line in enumerate(f.readlines()):
                 line = line.strip()
-                for char in range(len(line)):
-                    self.buffer.insert(i, char, line[char])
-                self.buffer.new_line(i + 1)
+                for col in range(len(line)):
+                    self.buffer.insert(i, col, line[col])
+                self.buffer.new_line(i, col + 1)
 
     def start(self):
         self.window.clear()
@@ -46,8 +46,8 @@ class EditorWindow:
             elif k == "KEY_DOWN":
                 self.cursor.down(len(self.next_line), self.buffer.lines)
             elif k in ("KEY_ENTER", "^J"):
-                self.buffer.new_line(virtual_y + 1)
-                self.cursor.down(0, self.buffer.lines)
+                self.buffer.new_line(virtual_y, x)
+                self.cursor.down(0, self.buffer.lines, True)
             elif k == "KEY_LEFT":
                 self.cursor.left()
             elif k == "KEY_RIGHT":
@@ -59,7 +59,7 @@ class EditorWindow:
                     continue
                 
                 self.buffer.insert(virtual_y, x, k)
-                self.cursor.right(len(self.cur_line))
+                self.cursor.right(len(self.cur_line) + 1)
 
             self.render()
 
@@ -78,10 +78,10 @@ class EditorWindow:
             self.window.addstr(line_ind, 0, row)
 
     def backspace(self, row, col):
-        if len(self.cur_line) == 0:
-            self.buffer.backspace(row + self.cursor.scroll_offset, col)
+        self.buffer.backspace(row + self.cursor.scroll_offset, col)
+
+        if col == 0:
             self.cursor.up(len(self.prev_line), True)
         else:
-            self.buffer.backspace(row + self.cursor.scroll_offset, col - 1)
             self.cursor.left()
 

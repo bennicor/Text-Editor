@@ -35,15 +35,19 @@ class Cursor:
         else:
             self._col = min(prev_row_len, self.col_memory)
 
-    def down(self, next_row_len, total_lines):
-        inside_window = self._row < self.window_height - 1 - self._rows_before_scroll
+    def down(self, next_row_len, total_lines, new_line=False):
+        inside_window = self._row < self.window_height - self._rows_before_scroll - 1
         inside_lines_limit = self._row + self._scroll_offset < total_lines - 1
 
         if inside_window and inside_lines_limit:
             self._row += 1
         elif inside_lines_limit:
             self._scroll_offset += 1
-        self._col = min(next_row_len, self.col_memory)
+
+        if new_line:
+            self._col = self.col_memory = next_row_len
+        else:
+            self._col = min(next_row_len, self.col_memory)
 
     def left(self):
         if self._col > 0:
