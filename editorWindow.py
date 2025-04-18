@@ -6,15 +6,18 @@ from curses import keyname
 class EditorWindow:
     def __init__(self, window):
         self.window = window
+        self.window_height, self.window_width = window.getmaxyx()
         self.buffer = TextBuffer()
-        self.cursor = Cursor(window.getmaxyx())
+        self.cursor = Cursor((self.window_height, self.window_width))
         
         self.prev_line = ""
         self.cur_line = ""
         self.next_line = ""
 
+        self.scroll_y = 0
+
     def load(self):
-        with open("./todo.txt", "r") as f:
+        with open("./test.txt", "r") as f:
             for i, line in enumerate(f.readlines()):
                 line = line.strip()
                 for char in range(len(line)):
@@ -22,9 +25,6 @@ class EditorWindow:
                 self.buffer.new_line(i + 1)
 
     def start(self):
-        # self.window.idlok(1)
-        # self.window.scrollok(1)
-
         self.window.clear()
         self.load()
         self.render()
@@ -44,8 +44,20 @@ class EditorWindow:
 
             if k == "KEY_UP":
                 self.cursor.up(len(self.prev_line))
+                
+                if self.cursor.scroll_up:
+                    new_scroll_y = self.scroll_y - 1
+
+                    if new_scroll_y >= 0:
+                        self.scroll_y = new_scroll_y
             elif k in ("KEY_DOWN"):
                 self.cursor.down(len(self.next_line), self.buffer.lines)
+                
+                if self.cursor.scroll_down:
+                    delta_scroll_y = self.scroll_y + 1
+
+                    if delta_scroll_y < self.buffer.lines:
+                        self.scroll_y = delta_scroll_y
             elif k in ("KEY_ENTER", "^J"):
                 self.buffer.new_line(y + 1)
                 self.cursor.down(0, self.buffer.lines)
@@ -65,16 +77,17 @@ class EditorWindow:
             self.render()
 
             y, x = self.cursor.pos()
-            # self.window.scroll(-1)
             self.window.move(y, x)
-
+            y += self.scroll_y
+            
             self.window.refresh()
 
     def render(self):
         self.window.clear()
 
-        for line_ind in range(self.buffer.lines):
-            row = self.buffer.get_row(line_ind)
+        lines_to_render = min(self.window_height, self.buffer.lines)
+        for line_ind in range(lines_to_render):
+            row = self.buffer.get_row(line_ind + self.scroll_y)
             self.window.addstr(line_ind, 0, "".join(row))
 
     def backspace(self, row, col):
