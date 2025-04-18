@@ -8,7 +8,7 @@ class EditorWindow:
         self.window = window
         self.window_height, self.window_width = window.getmaxyx()
         self.buffer = TextBuffer()
-        self.cursor = Cursor((self.window_height, self.window_width))
+        self.cursor = Cursor((self.window_height, self.window_width), rows_before_scroll=5)
         
         self.prev_line = ""
         self.cur_line = ""

@@ -1,11 +1,11 @@
 class Cursor:
-    def __init__(self, boundaries, row=0, col=0):
+    def __init__(self, boundaries, row=0, col=0, rows_before_scroll=0):
         self._row = row
         self._col = col
         self.window_height, self.window_width = boundaries
         self.col_memory = 0
         self._scroll_offset = 0
-        self._rows_before_scroll = 0
+        self._rows_before_scroll = rows_before_scroll
 
     @property
     def row(self):
@@ -23,7 +23,9 @@ class Cursor:
         return (self._row, self._col)
     
     def up(self, prev_row_len, from_removed_line=False):
-        if self._row > 0:
+        if self._row > self._rows_before_scroll:
+            self._row -= 1
+        elif self._row > 0 and self.scroll_offset == 0:
             self._row -= 1
         elif self._scroll_offset > 0:
             self._scroll_offset -= 1
@@ -34,7 +36,7 @@ class Cursor:
             self._col = min(prev_row_len, self.col_memory)
 
     def down(self, next_row_len, total_lines):
-        inside_window = self._row < self.window_height - 1
+        inside_window = self._row < self.window_height - 1 - self._rows_before_scroll
         inside_lines_limit = self._row + self._scroll_offset < total_lines - 1
 
         if inside_window and inside_lines_limit:
