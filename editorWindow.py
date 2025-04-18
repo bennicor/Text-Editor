@@ -14,8 +14,6 @@ class EditorWindow:
         self.cur_line = ""
         self.next_line = ""
 
-        self.scroll_y = 0
-
     def load(self):
         with open("./test.txt", "r") as f:
             for i, line in enumerate(f.readlines()):
@@ -28,38 +26,27 @@ class EditorWindow:
         self.window.clear()
         self.load()
         self.render()
+        self.main_loop()
 
-        y, x = 0, 0
+    def main_loop(self):
+        y, x = self.cursor.pos()
+        virtual_y = y
         self.window.move(y, x)
-        self.main_loop(y, x)
 
-    def main_loop(self, y, x):
         while True:
-            self.prev_line = self.buffer.get_row(y - 1)
-            self.cur_line = self.buffer.get_row(y)
-            self.next_line = self.buffer.get_row(y + 1)
+            self.prev_line = self.buffer.get_row(virtual_y - 1)
+            self.cur_line = self.buffer.get_row(virtual_y)
+            self.next_line = self.buffer.get_row(virtual_y + 1)
 
             key = self.window.getch()
             k = keyname(key).decode()
 
             if k == "KEY_UP":
                 self.cursor.up(len(self.prev_line))
-                
-                if self.cursor.scroll_up:
-                    new_scroll_y = self.scroll_y - 1
-
-                    if new_scroll_y >= 0:
-                        self.scroll_y = new_scroll_y
-            elif k in ("KEY_DOWN"):
+            elif k == "KEY_DOWN":
                 self.cursor.down(len(self.next_line), self.buffer.lines)
-                
-                if self.cursor.scroll_down:
-                    delta_scroll_y = self.scroll_y + 1
-
-                    if delta_scroll_y < self.buffer.lines:
-                        self.scroll_y = delta_scroll_y
             elif k in ("KEY_ENTER", "^J"):
-                self.buffer.new_line(y + 1)
+                self.buffer.new_line(virtual_y + 1)
                 self.cursor.down(0, self.buffer.lines)
             elif k == "KEY_LEFT":
                 self.cursor.left()
@@ -71,29 +58,28 @@ class EditorWindow:
                 if len(k) > 1:
                     continue
                 
-                self.buffer.insert(y, x, k)
+                self.buffer.insert(virtual_y, x, k)
                 self.cursor.right(len(self.cur_line))
 
             self.render()
-
             y, x = self.cursor.pos()
             self.window.move(y, x)
-            y += self.scroll_y
-            
+            virtual_y = y + self.cursor.scroll_offset
             self.window.refresh()
 
     def render(self):
         self.window.clear()
-
-        lines_to_render = min(self.window_height, self.buffer.lines)
-        for line_ind in range(lines_to_render):
-            row = self.buffer.get_row(line_ind + self.scroll_y)
+        
+        visible_lines = min(self.window_height, self.buffer.lines - self.cursor.scroll_offset)
+        for line_ind in range(visible_lines):
+            row = self.buffer.get_row(line_ind + self.cursor.scroll_offset)
             self.window.addstr(line_ind, 0, "".join(row))
 
     def backspace(self, row, col):
         if len(self.cur_line) == 0:
-            self.buffer.backspace(row, col)
+            self.buffer.backspace(row + self.cursor.scroll_offset, col)
             self.cursor.up(len(self.prev_line), True)
         else:
-            self.buffer.backspace(row, col - 1)
+            self.buffer.backspace(row + self.cursor.scroll_offset, col - 1)
             self.cursor.left()
+

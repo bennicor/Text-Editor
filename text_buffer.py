@@ -27,7 +27,7 @@ class TextBuffer:
             return
         
         if len(self.text[row]) == 0:
-            if self._lines == 1:
+            if self._lines == 1 or row == 0:
                 return
             
             self.text.pop(row)
