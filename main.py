@@ -1,9 +1,8 @@
 import curses
 from editorWindow import EditorWindow
 
-def main(stdscr):
-    stdscr.clear()
 
+def main(stdscr):
     window = EditorWindow(stdscr)
     window.start()
 

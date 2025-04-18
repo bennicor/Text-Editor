@@ -13,8 +13,24 @@ class EditorWindow:
         self.cur_line = ""
         self.next_line = ""
 
+    def load(self):
+        with open("./todo.txt", "r") as f:
+            for i, line in enumerate(f.readlines()):
+                line = line.strip()
+                for char in range(len(line)):
+                    self.buffer.insert(i, char, line[char])
+                self.buffer.new_line(i + 1)
+
     def start(self):
-        y, x = self.cursor.pos()
+        # self.window.idlok(1)
+        # self.window.scrollok(1)
+
+        self.window.clear()
+        self.load()
+        self.render()
+
+        y, x = 0, 0
+        self.window.move(y, x)
         self.main_loop(y, x)
 
     def main_loop(self, y, x):
@@ -32,7 +48,6 @@ class EditorWindow:
                 self.cursor.down(len(self.next_line), self.buffer.lines)
             elif k in ("KEY_ENTER", "^J"):
                 self.buffer.new_line(y + 1)
-                self.lines_render(y)
                 self.cursor.down(0, self.buffer.lines)
             elif k == "KEY_LEFT":
                 self.cursor.left()
@@ -45,36 +60,27 @@ class EditorWindow:
                     continue
                 
                 self.buffer.insert(y, x, k)
-                self.line_render(y)
                 self.cursor.right(len(self.cur_line))
 
+            self.render()
+
             y, x = self.cursor.pos()
-            self.window.addstr(10, 0, f"{y} {x} {self.cursor.col_memory}")
+            # self.window.scroll(-1)
             self.window.move(y, x)
 
             self.window.refresh()
 
-    def line_render(self, row):
-        self.window.move(row, 0)
-        self.window.clrtoeol()
+    def render(self):
+        self.window.clear()
 
-        line = self.buffer.get_row(row)
-        self.window.addstr(row, 0, "".join(line))
-    
-    def lines_render(self, row):
-        self.window.move(row, 0)
-        self.window.clrtobot()
-
-        for i in range(row, self.buffer.lines):
-            line = self.buffer.get_row(i)
-            self.window.addstr(i, 0, "".join(line))
+        for line_ind in range(self.buffer.lines):
+            row = self.buffer.get_row(line_ind)
+            self.window.addstr(line_ind, 0, "".join(row))
 
     def backspace(self, row, col):
         if len(self.cur_line) == 0:
             self.buffer.backspace(row, col)
             self.cursor.up(len(self.prev_line), True)
-            self.lines_render(row)
         else:
             self.buffer.backspace(row, col - 1)
-            self.line_render(row)
             self.cursor.left()

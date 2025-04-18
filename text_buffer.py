@@ -17,6 +17,9 @@ class TextBuffer:
         self._lines += 1
 
     def insert(self, row, col, char):
+        if not (0 <= row < self._lines):
+            return
+        
         self.text[row].insert(col, char)
 
     def backspace(self, row, col):
