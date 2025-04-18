@@ -1,6 +1,6 @@
 class TextBuffer:
     def __init__(self):
-        self.text = [[]]
+        self.text = [""]
         self._lines = len(self.text)
 
     @property
@@ -13,14 +13,15 @@ class TextBuffer:
         return []
     
     def new_line(self, row):
-        self.text.insert(row, [])
+        self.text.insert(row, "")
         self._lines += 1
 
     def insert(self, row, col, char):
         if not (0 <= row < self._lines):
             return
         
-        self.text[row].insert(col, char)
+        line = self.text[row]
+        self.text[row] = line[:col] + char + line[col:]
 
     def backspace(self, row, col):
         if col < 0:
@@ -33,4 +34,5 @@ class TextBuffer:
             self.text.pop(row)
             self._lines -= 1
         else:
-            self.text[row].pop(col)
+            line = self.text[row]
+            self.text[row] = line[:col] + line[col + 1:]

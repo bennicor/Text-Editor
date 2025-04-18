@@ -25,10 +25,10 @@ class Cursor:
     def up(self, prev_row_len, from_removed_line=False):
         if self._row > self._rows_before_scroll:
             self._row -= 1
-        elif self._row > 0 and self.scroll_offset == 0:
-            self._row -= 1
         elif self._scroll_offset > 0:
             self._scroll_offset -= 1
+        elif self._row > 0 and self.scroll_offset == 0:
+            self._row -= 1
 
         if from_removed_line:
             self._col = self.col_memory = prev_row_len

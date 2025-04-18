@@ -62,9 +62,11 @@ class EditorWindow:
                 self.cursor.right(len(self.cur_line))
 
             self.render()
+
             y, x = self.cursor.pos()
             self.window.move(y, x)
             virtual_y = y + self.cursor.scroll_offset
+
             self.window.refresh()
 
     def render(self):
@@ -73,7 +75,7 @@ class EditorWindow:
         visible_lines = min(self.window_height, self.buffer.lines - self.cursor.scroll_offset)
         for line_ind in range(visible_lines):
             row = self.buffer.get_row(line_ind + self.cursor.scroll_offset)
-            self.window.addstr(line_ind, 0, "".join(row))
+            self.window.addstr(line_ind, 0, row)
 
     def backspace(self, row, col):
         if len(self.cur_line) == 0:
